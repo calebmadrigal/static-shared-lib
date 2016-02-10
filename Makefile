@@ -1,13 +1,13 @@
 all: do_test
 
-testlib2.so: testlib2.c testlib2.h
-	gcc -c -fPIC testlib2.c -o testlib2.so
+testlib2.o: testlib2.c testlib2.h
+	gcc -c -fPIC testlib2.c -o testlib2.o
 
-testlib.so: testlib2.so testlib.c testlib.h
-	gcc -fPIC testlib.c testlib2.so -static -shared -o testlib.so -lc
+libtestlib.so: testlib2.o testlib.c testlib.h
+	gcc -fPIC testlib.c testlib2.o -static -shared -o libtestlib.so -lc
 
-do_test: testlib.so testlib2.so
-	gcc -fPIC do_test.c testlib.so testlib2.so -o do_test
+do_test: libtestlib.so
+	gcc -fPIC do_test.c -L. -ltestlib -o do_test
 
 test:
 	# If testlib.so is statically compiled, testlib2.so shouldn't be required
@@ -15,7 +15,7 @@ test:
 	LD_LIBRARY_PATH=. ./do_test
 
 clean:
-	rm -f do_test testlib.so testlib2.so
+	rm -f do_test libtestlib.so testlib2.o
 
 .PHONY: all
 .PHONY: clean
